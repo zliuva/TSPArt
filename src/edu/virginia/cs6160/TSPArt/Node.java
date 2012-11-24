@@ -4,10 +4,12 @@ public class Node {
 	protected int x;
 	protected int y;
 	protected boolean visited;
+	protected int id;
 
-	public Node(int x, int y, boolean visited) {
+	public Node(int x, int y, int id, boolean visited) {
 		this.x = x;
 		this.y = y;
+		this.id = id;
 		this.visited = visited;
 	}
 

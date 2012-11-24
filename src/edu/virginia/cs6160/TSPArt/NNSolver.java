@@ -1,9 +1,10 @@
 package edu.virginia.cs6160.TSPArt;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class NNSolver implements TSPSolver {
-	private ArrayList<Node> nodes;
+	private List<Node> nodes;
+	private DistanceMatrix distances;
 
 	private Node getNearestNode(Node source) {
 		int currentDistance = Integer.MAX_VALUE;
@@ -11,9 +12,9 @@ public class NNSolver implements TSPSolver {
 
 		for (Node node : nodes) {
 			if (!node.visited) {
-				Line line = new Line(source, node);
-				if (currentDistance > line.distance) {
-					currentDistance = line.distance;
+				int distance = distances.getDistance(source, node);
+				if (currentDistance > distance) {
+					currentDistance = distance;
 					nearestNode = node;
 				}
 			}
@@ -22,8 +23,9 @@ public class NNSolver implements TSPSolver {
 		return nearestNode;
 	}
 
-	public Tour solve(ArrayList<Node> nodes) {
+	public Tour solve(List<Node> nodes) {
 		this.nodes = nodes;
+		this.distances = new DistanceMatrix(nodes);
 
 		Tour tour = new Tour();
 		

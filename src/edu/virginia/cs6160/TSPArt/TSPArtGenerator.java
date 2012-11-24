@@ -5,12 +5,13 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class TSPArtGenerator {
 	private BufferedImage originalImage;
 	private BufferedImage resultImage;
-	private ArrayList<Node> nodes;
+	private List<Node> nodes;
 	private TSPSolver solver;
 	private TSPFixer fixer;
 
@@ -69,6 +70,7 @@ public class TSPArtGenerator {
 	private void slidingWindowPixelate(BufferedImage image) {
 		int slidingWindow = 4;
 		int threshold = 4;
+		int id = 0;
 
 		Random random = new Random(0);
 
@@ -99,7 +101,7 @@ public class TSPArtGenerator {
 								y = image.getHeight() - 1;
 							}
 
-							nodes.add(new Node(x, y, false));
+							nodes.add(new Node(x, y, id++, false));
 							hasBlack = true;
 							break;
 						}

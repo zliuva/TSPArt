@@ -1,7 +1,7 @@
 package edu.virginia.cs6160.TSPArt;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface TSPSolver {
-	public Tour solve(ArrayList<Node> nodes);
+	public Tour solve(List<Node> nodes);
 }

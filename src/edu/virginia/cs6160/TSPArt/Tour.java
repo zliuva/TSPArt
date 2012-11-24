@@ -1,9 +1,10 @@
 package edu.virginia.cs6160.TSPArt;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Tour {
-	protected ArrayList<Line> lines;
+	protected List<Line> lines;
 
 	public Tour() {
 		lines = new ArrayList<Line>();
