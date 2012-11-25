@@ -1,10 +1,13 @@
 package edu.virginia.cs6160.TSPArt;
 
-public class Node {
+public class Node implements Comparable<Node> {
 	protected int x;
 	protected int y;
 	protected boolean visited;
 	protected int id;
+	
+	protected int key; // for use with priority queue in MST
+	protected Node prev;
 
 	public Node(int x, int y, int id, boolean visited) {
 		this.x = x;
@@ -27,5 +30,10 @@ public class Node {
 		}
 
 		return false;
+	}
+	
+	@Override
+	public int compareTo(Node node) {
+		return this.key - node.key;
 	}
 }

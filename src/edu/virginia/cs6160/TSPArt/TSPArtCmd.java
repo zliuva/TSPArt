@@ -18,7 +18,7 @@ public class TSPArtCmd {
 			e.printStackTrace();
 		}
 
-		TSPArtGenerator generator = new TSPArtGenerator(image, TSPSolverFactory.getSolver("NN"),
+		TSPArtGenerator generator = new TSPArtGenerator(image, TSPSolverFactory.getSolver(args[1]),
 				TSPFixerFactory.getFixer("2-Opt"));
 		BufferedImage resultImage = generator.getTSPArtImage();
 
