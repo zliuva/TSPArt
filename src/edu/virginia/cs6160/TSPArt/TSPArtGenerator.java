@@ -14,11 +14,21 @@ public class TSPArtGenerator {
 	private List<Node> nodes;
 	private TSPSolver solver;
 	private TSPFixer fixer;
+	private boolean randomizeDots;
+	
+	public TSPArtGenerator(BufferedImage image, TSPSolver solver) {
+		this(image, solver, null);
+	}
 
 	public TSPArtGenerator(BufferedImage image, TSPSolver solver, TSPFixer fixer) {
+		this(image, solver, fixer, true);
+	}
+	
+	public TSPArtGenerator(BufferedImage image, TSPSolver solver, TSPFixer fixer, boolean randomizeDots) {
 		this.originalImage = image;
 		this.solver = solver;
 		this.fixer = fixer;
+		this.randomizeDots = randomizeDots;
 
 		resultImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = resultImage.createGraphics();
@@ -90,8 +100,13 @@ public class TSPArtGenerator {
 						}
 
 						if (count > threshold) {
-							int x  = k + random.nextInt(slidingWindow / 2);
-							int y = m + random.nextInt(slidingWindow / 2);
+							int x  = k;
+							int y = m;
+							
+							if (randomizeDots) {
+								x += random.nextInt(slidingWindow / 2);
+								y += random.nextInt(slidingWindow / 2);
+							}
 							
 							if (x >= image.getWidth()) {
 								x = image.getWidth() - 1;

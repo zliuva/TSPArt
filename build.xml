@@ -6,6 +6,7 @@
 	<property name="jar.dir"	 value="${build.dir}/bin"/>
 
 	<property name="main-class"  value="edu.virginia.cs6160.TSPArt.TSPArtCmd"/>
+	<property name="gui-class" value="edu.virginia.cs6160.TSPArt.TSPArtGUI"/>
 
 	<target name="clean">
 		<delete dir="${build.dir}"/>
@@ -33,6 +34,10 @@
 			<arg value="${file}"/>
 			<arg value="${solver}"/>
 		</java>
+	</target>
+
+	<target name="run-gui" depends="jar">
+		<java fork="true" classname="${gui-class}" classpath="${jar.dir}/${ant.project.name}.jar"/>
 	</target>
 
 	<target name="clean-build" depends="clean,jar"/>
