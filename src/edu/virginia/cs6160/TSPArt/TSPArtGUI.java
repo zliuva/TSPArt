@@ -39,7 +39,8 @@ public class TSPArtGUI {
 	private BufferedImage resultImage;
 	private JMenuItem mntmSave;
 	private JMenuItem chckbxmntmNearestNeighbor;
-	private JMenuItem chckbxmntmMinimumSpanningTree;
+	private JMenuItem chckbxmntmMSTTree;
+	private JMenuItem chckbxmntmMSTTSP;
 	private JCheckBoxMenuItem chckbxmntmFixCrossings;
 	private JCheckBoxMenuItem chckbxmntmRandomizeDots;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
@@ -122,10 +123,15 @@ public class TSPArtGUI {
 		chckbxmntmNearestNeighbor.setSelected(true);
 		mnTspSolver.add(chckbxmntmNearestNeighbor);
 
-		chckbxmntmMinimumSpanningTree = new JCheckBoxMenuItem("Minimum Spanning Tree");
-		chckbxmntmMinimumSpanningTree.addActionListener(optionActionListener);
-		buttonGroup.add(chckbxmntmMinimumSpanningTree);
-		mnTspSolver.add(chckbxmntmMinimumSpanningTree);
+		chckbxmntmMSTTree = new JCheckBoxMenuItem("Minimum Spanning Tree");
+		chckbxmntmMSTTree.addActionListener(optionActionListener);
+		buttonGroup.add(chckbxmntmMSTTree);
+		mnTspSolver.add(chckbxmntmMSTTree);
+
+		chckbxmntmMSTTSP = new JCheckBoxMenuItem("Minimum Spanning Tree w/ TSP walkthrough");
+		chckbxmntmMSTTSP.addActionListener(optionActionListener);
+		buttonGroup.add(chckbxmntmMSTTSP);
+		mnTspSolver.add(chckbxmntmMSTTSP);
 
 		chckbxmntmFixCrossings = new JCheckBoxMenuItem("Fix Crossings");
 		chckbxmntmFixCrossings.addActionListener(optionActionListener);
@@ -159,15 +165,18 @@ public class TSPArtGUI {
 
 		String solverName = null;
 
-		if (this.chckbxmntmMinimumSpanningTree.isSelected()) {
-			solverName = "MST";
+		if (this.chckbxmntmMSTTree.isSelected()) {
+			solverName = "MST-Tree";
+		} else if (this.chckbxmntmMSTTSP.isSelected()) {
+			solverName = "MST-TSP";
 		} else if (this.chckbxmntmNearestNeighbor.isSelected()) {
 			solverName = "NN";
 		}
 
 		final TSPSolver solver = TSPSolverFactory.getSolver(solverName);
 
-		final TSPFixer fixer = this.chckbxmntmFixCrossings.isSelected() ? TSPFixerFactory.getFixer("2-Opt") : null;
+		final TSPFixer fixer = this.chckbxmntmFixCrossings.isEnabled() && this.chckbxmntmFixCrossings.isSelected() ? TSPFixerFactory
+				.getFixer("2-Opt") : null;
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -241,6 +250,12 @@ public class TSPArtGUI {
 
 	private class OptionActionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
+			if (chckbxmntmMSTTree.isSelected()) {
+				chckbxmntmFixCrossings.setEnabled(false);
+			} else {
+				chckbxmntmFixCrossings.setEnabled(true);
+			}
+
 			if (originalImage != null) {
 				generateTSPArt();
 			}
