@@ -2,6 +2,7 @@ package edu.virginia.cs6160.TSPArt;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Frame;
@@ -10,6 +11,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -27,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -154,16 +157,22 @@ public class TSPArtGUI {
 		frmTspArtGenerator.getContentPane().add(splitPane, BorderLayout.CENTER);
 
 		lblOriginal = new JLabel("");
-		lblOriginal.setBorder(BorderFactory.createTitledBorder(BorderFactory
-				.createEtchedBorder(EtchedBorder.LOWERED), "Original"));
+		lblOriginal.setBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createEtchedBorder(EtchedBorder.LOWERED),
+				"Original"));
 		splitPane.setLeftComponent(lblOriginal);
 		lblOriginal.setHorizontalAlignment(SwingConstants.CENTER);
 
 		lblTspArt = new JLabel("");
-		lblTspArt.setBorder(BorderFactory.createTitledBorder(BorderFactory
-				.createEtchedBorder(EtchedBorder.LOWERED), "TSP Art"));
-		splitPane.setRightComponent(lblTspArt);
+		lblTspArt.setBorder(BorderFactory.createTitledBorder(
+				BorderFactory.createEtchedBorder(EtchedBorder.LOWERED),
+				"TSP Art"));
+		JScrollPane scrollPane = new JScrollPane(lblTspArt);
+		scrollPane.setPreferredSize(new Dimension(150, 150));
+		splitPane.setRightComponent(scrollPane);
+		splitPane.setAutoscrolls(true);
 		lblTspArt.setHorizontalAlignment(SwingConstants.CENTER);
+		lblTspArt.setAutoscrolls(true);
 	}
 
 	private void generateTSPArt() {
@@ -193,7 +202,9 @@ public class TSPArtGUI {
 
 				lblTspArt.setIcon(new ImageIcon(resultImage));
 				ZoomListener zoomListener = new ZoomListener();
+				lblTspArt.setFocusable(true);
 				lblTspArt.addMouseListener(zoomListener);
+				frmTspArtGenerator.addKeyListener(zoomListener);
 				frmTspArtGenerator.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
 				mntmSave.setEnabled(true);
@@ -257,7 +268,7 @@ public class TSPArtGUI {
 		}
 	}
 
-	public class ZoomListener implements MouseListener {
+	public class ZoomListener implements MouseListener, KeyListener {
 
 		private BufferedImage resizedImage = null;
 
@@ -278,10 +289,6 @@ public class TSPArtGUI {
 				width = resizedImage.getWidth();
 				height = resizedImage.getHeight();
 			}
-			int trueX = (lblTspArt.getWidth() - lblTspArt.getIcon()
-					.getIconWidth()) / 2;
-			int trueY = (lblTspArt.getHeight() - lblTspArt.getIcon()
-					.getIconHeight()) / 2;
 
 			if (resultImage != null) {
 				int newImageWidth = (int) (width * zoomLevel);
@@ -291,12 +298,7 @@ public class TSPArtGUI {
 						resultImage.getType());
 				Graphics2D g = resizedImage.createGraphics();
 				if (zoomLevel > 0) {
-					int distanceToMoveX = e.getX() - trueX - width / 2;
-					int distanceToMoveY = e.getY() - trueY - height / 2;
-					g.drawImage(resultImage,
-							(int) (-1 * distanceToMoveX * zoomLevel), (int) (-1
-									* distanceToMoveY * zoomLevel),
-							newImageWidth, newImageHeight, null);
+					g.drawImage(resultImage,0, 0, newImageWidth, newImageHeight, null);
 				} else {
 					g.drawImage(resultImage, 0, 0, newImageWidth,
 							newImageHeight, null);
@@ -335,6 +337,35 @@ public class TSPArtGUI {
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {
+
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			int width = resultImage.getWidth();
+			int height = resultImage.getHeight();
+
+			int code = e.getKeyCode();
+			
+			if (code == KeyEvent.VK_SPACE && resultImage != null) {
+				
+				Graphics2D g = resultImage.createGraphics();
+				g.drawImage(resultImage, 0, 0, width, height, null);
+				lblTspArt.setIcon(new ImageIcon(resultImage));
+				g.dispose();
+
+			}
+
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
 			// TODO Auto-generated method stub
 
 		}
