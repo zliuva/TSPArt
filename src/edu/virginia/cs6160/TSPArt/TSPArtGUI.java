@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FileDialog;
 import java.awt.Frame;
-import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,26 +46,25 @@ public class TSPArtGUI {
 	private JMenuItem chckbxmntmNearestNeighbor;
 	private JMenuItem chckbxmntmMSTTree;
 	private JMenuItem chckbxmntmMSTTSP;
-	private JCheckBoxMenuItem chckbxmntmFixCrossings;
+	private JMenuItem chckbxmntmFixCrossings;
 	private JCheckBoxMenuItem chckbxmntmRandomizeDots;
 	private final ButtonGroup buttonGroup = new ButtonGroup();
 	private final ActionListener optionActionListener = new OptionActionListener();
+	private TSPArtGenerator generator = null;
 
 	/**
 	 * Launch the application.
 	 */
 	public static void main(String[] args) throws Exception {
 		System.setProperty("apple.laf.useScreenMenuBar", "true");
-		System.setProperty("com.apple.mrj.application.apple.menu.about.name",
-				"TSP Art Generator");
+		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "TSP Art Generator");
 		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					TSPArtGUI window = new TSPArtGUI();
-					window.frmTspArtGenerator
-							.setExtendedState(Frame.MAXIMIZED_BOTH);
+					window.frmTspArtGenerator.setExtendedState(Frame.MAXIMIZED_BOTH);
 					window.frmTspArtGenerator.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -104,8 +102,8 @@ public class TSPArtGUI {
 				showOpenDialog();
 			}
 		});
-		mntmOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit
-				.getDefaultToolkit().getMenuShortcutKeyMask()));
+		mntmOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit()
+				.getMenuShortcutKeyMask()));
 		mnFile.add(mntmOpen);
 
 		mntmSave = new JMenuItem("Save");
@@ -115,8 +113,8 @@ public class TSPArtGUI {
 				showSaveDialog();
 			}
 		});
-		mntmSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit
-				.getDefaultToolkit().getMenuShortcutKeyMask()));
+		mntmSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit()
+				.getMenuShortcutKeyMask()));
 		mnFile.add(mntmSave);
 
 		JMenu mnOptions = new JMenu("Options");
@@ -136,36 +134,51 @@ public class TSPArtGUI {
 		buttonGroup.add(chckbxmntmMSTTree);
 		mnTspSolver.add(chckbxmntmMSTTree);
 
-		chckbxmntmMSTTSP = new JCheckBoxMenuItem(
-				"Minimum Spanning Tree w/ TSP walkthrough");
+		chckbxmntmMSTTSP = new JCheckBoxMenuItem("Minimum Spanning Tree w/ TSP walkthrough");
 		chckbxmntmMSTTSP.addActionListener(optionActionListener);
 		buttonGroup.add(chckbxmntmMSTTSP);
 		mnTspSolver.add(chckbxmntmMSTTSP);
-
-		chckbxmntmFixCrossings = new JCheckBoxMenuItem("Fix Crossings");
-		chckbxmntmFixCrossings.addActionListener(optionActionListener);
-		chckbxmntmFixCrossings.setSelected(true);
-		mnOptions.add(chckbxmntmFixCrossings);
 
 		chckbxmntmRandomizeDots = new JCheckBoxMenuItem("Randomize Dots");
 		chckbxmntmRandomizeDots.addActionListener(optionActionListener);
 		chckbxmntmRandomizeDots.setSelected(true);
 		mnOptions.add(chckbxmntmRandomizeDots);
 
+		chckbxmntmFixCrossings = new JMenuItem("Fix Crossings (1 more iteration)");
+		chckbxmntmFixCrossings.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (generator == null) {
+					return;
+				}
+
+				frmTspArtGenerator.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
+				EventQueue.invokeLater(new Runnable() {
+					public void run() {
+						resultImage = generator.getTSPArtImage();
+
+						lblTspArt.setIcon(new ImageIcon(resultImage));
+
+						frmTspArtGenerator.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+					}
+				});
+			}
+		});
+		// chckbxmntmFixCrossings.setSelected(true);
+		mnOptions.add(chckbxmntmFixCrossings);
+
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setResizeWeight(0.5);
 		frmTspArtGenerator.getContentPane().add(splitPane, BorderLayout.CENTER);
 
 		lblOriginal = new JLabel("");
-		lblOriginal.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(EtchedBorder.LOWERED),
+		lblOriginal.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED),
 				"Original"));
 		splitPane.setLeftComponent(lblOriginal);
 		lblOriginal.setHorizontalAlignment(SwingConstants.CENTER);
 
 		lblTspArt = new JLabel("");
-		lblTspArt.setBorder(BorderFactory.createTitledBorder(
-				BorderFactory.createEtchedBorder(EtchedBorder.LOWERED),
+		lblTspArt.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED),
 				"TSP Art"));
 		JScrollPane scrollPane = new JScrollPane(lblTspArt);
 		scrollPane.setPreferredSize(new Dimension(150, 150));
@@ -173,6 +186,11 @@ public class TSPArtGUI {
 		splitPane.setAutoscrolls(true);
 		lblTspArt.setHorizontalAlignment(SwingConstants.CENTER);
 		lblTspArt.setAutoscrolls(true);
+
+		ZoomListener zoomListener = new ZoomListener();
+		lblTspArt.setFocusable(true);
+		lblTspArt.addMouseListener(zoomListener);
+		lblTspArt.addKeyListener(zoomListener);
 	}
 
 	private void generateTSPArt() {
@@ -190,21 +208,15 @@ public class TSPArtGUI {
 
 		final TSPSolver solver = TSPSolverFactory.getSolver(solverName);
 
-		final TSPFixer fixer = this.chckbxmntmFixCrossings.isEnabled()
-				&& this.chckbxmntmFixCrossings.isSelected() ? TSPFixerFactory
-				.getFixer("2-Opt") : null;
+		final TSPFixer fixer = this.chckbxmntmFixCrossings.isEnabled() ? TSPFixerFactory.getFixer("2-Opt") : null;
 
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				TSPArtGenerator generator = new TSPArtGenerator(originalImage,
-						solver, fixer, chckbxmntmRandomizeDots.isSelected());
+				generator = new TSPArtGenerator(originalImage, solver, fixer, chckbxmntmRandomizeDots.isSelected());
 				resultImage = generator.getTSPArtImage();
 
 				lblTspArt.setIcon(new ImageIcon(resultImage));
-				ZoomListener zoomListener = new ZoomListener();
-				lblTspArt.setFocusable(true);
-				lblTspArt.addMouseListener(zoomListener);
-				frmTspArtGenerator.addKeyListener(zoomListener);
+
 				frmTspArtGenerator.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
 				mntmSave.setEnabled(true);
@@ -218,8 +230,7 @@ public class TSPArtGUI {
 		fileDialog.setDirectory(".");
 		fileDialog.setFilenameFilter(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return name.toLowerCase().endsWith("png")
-						|| name.toLowerCase().endsWith("jpg")
+				return name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpg")
 						|| name.toLowerCase().endsWith("jpeg");
 			}
 		});
@@ -268,44 +279,22 @@ public class TSPArtGUI {
 		}
 	}
 
-	public class ZoomListener implements MouseListener, KeyListener {
-
-		private BufferedImage resizedImage = null;
+	private class ZoomListener implements MouseListener, KeyListener {
+		private int zoomLevel = 1;
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-
-			double zoomLevel = 2;
-			int width = 0;
-			int height = 0;
-
 			if (e.getButton() == 3) {
-				zoomLevel = .5;
-			}
-			if (resizedImage == null) {
-				width = resultImage.getWidth();
-				height = resultImage.getHeight();
-			} else {
-				width = resizedImage.getWidth();
-				height = resizedImage.getHeight();
-			}
-
-			if (resultImage != null) {
-				int newImageWidth = (int) (width * zoomLevel);
-				int newImageHeight = (int) (height * zoomLevel);
-
-				resizedImage = new BufferedImage(newImageWidth, newImageHeight,
-						resultImage.getType());
-				Graphics2D g = resizedImage.createGraphics();
-				if (zoomLevel > 0) {
-					g.drawImage(resultImage,0, 0, newImageWidth, newImageHeight, null);
-				} else {
-					g.drawImage(resultImage, 0, 0, newImageWidth,
-							newImageHeight, null);
+				if (zoomLevel > 1) {
+					zoomLevel--;
 				}
-				lblTspArt.setIcon(new ImageIcon(resizedImage));
+			} else {
+				zoomLevel++;
+			}
 
-				g.dispose();
+			if (generator != null) {
+				BufferedImage resizedImage = generator.getScaledTSPArtImage(zoomLevel);
+				lblTspArt.setIcon(new ImageIcon(resizedImage));
 			}
 		}
 
@@ -321,7 +310,6 @@ public class TSPArtGUI {
 
 		@Override
 		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
 			Cursor cursor = Cursor.getDefaultCursor();
 			// change cursor appearance to HAND_CURSOR when the mouse pointed on
 			// images
@@ -331,43 +319,26 @@ public class TSPArtGUI {
 
 		@Override
 		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
-
 		}
 
 		@Override
 		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
-
 		}
 
 		@Override
 		public void keyTyped(KeyEvent e) {
-
 		}
 
 		@Override
 		public void keyPressed(KeyEvent e) {
-			int width = resultImage.getWidth();
-			int height = resultImage.getHeight();
-
-			int code = e.getKeyCode();
-			
-			if (code == KeyEvent.VK_SPACE && resultImage != null) {
-				
-				Graphics2D g = resultImage.createGraphics();
-				g.drawImage(resultImage, 0, 0, width, height, null);
+			if (e.getKeyCode() == KeyEvent.VK_SPACE && resultImage != null) {
+				zoomLevel = 1;
 				lblTspArt.setIcon(new ImageIcon(resultImage));
-				g.dispose();
-
 			}
-
 		}
 
 		@Override
 		public void keyReleased(KeyEvent e) {
-			// TODO Auto-generated method stub
-
 		}
 
 	}
@@ -379,14 +350,6 @@ public class TSPArtGUI {
 			} else {
 				chckbxmntmFixCrossings.setEnabled(true);
 			}
-
-			ZoomListener zoomListener = new ZoomListener();
-			MouseListener[] listeners = lblTspArt.getMouseListeners();
-			for (MouseListener current : listeners) {
-				lblTspArt.removeMouseListener(current);
-			}
-
-			lblTspArt.addMouseListener(zoomListener);
 
 			if (originalImage != null) {
 				generateTSPArt();

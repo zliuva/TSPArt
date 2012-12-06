@@ -15,6 +15,7 @@ public class TSPArtGenerator {
 	private TSPSolver solver;
 	private TSPFixer fixer;
 	private boolean randomizeDots;
+	private Tour tour = null;
 	
 	public TSPArtGenerator(BufferedImage image, TSPSolver solver) {
 		this(image, solver, null);
@@ -30,31 +31,26 @@ public class TSPArtGenerator {
 		this.fixer = fixer;
 		this.randomizeDots = randomizeDots;
 
+		nodes = new ArrayList<Node>(originalImage.getWidth() * originalImage.getHeight());
+	}
+
+	public BufferedImage getTSPArtImage() {
+		if (tour == null) {
+			BufferedImage bwImage = toBinaryImage(originalImage);
+			slidingWindowPixelate(bwImage);
+			
+			tour = solver.solve(nodes);
+		} else {
+			if (fixer != null) {
+				fixer.removeIntersections(tour);
+			}
+		}
+		
 		resultImage = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = resultImage.createGraphics();
 		g.setColor(Color.white);
 		g.fillRect(0, 0, resultImage.getWidth(), resultImage.getHeight());
-		g.dispose();
 
-		nodes = new ArrayList<Node>(resultImage.getWidth() * resultImage.getHeight());
-	}
-
-	public BufferedImage getTSPArtImage() {
-		BufferedImage bwImage = toBinaryImage(originalImage);
-		slidingWindowPixelate(bwImage);
-
-		// draw the dots first
-		for (Node node : nodes) {
-			resultImage.setRGB(node.x, node.y, Color.black.getRGB());
-		}
-
-		Tour tour = solver.solve(nodes);
-		
-		if (fixer != null) {
-			fixer.removeIntersections(tour);
-		}
-
-		Graphics2D g = resultImage.createGraphics();
 		g.setColor(Color.black);
 		BasicStroke bs = new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
 		g.setStroke(bs);
@@ -62,6 +58,31 @@ public class TSPArtGenerator {
 		for (Line line : tour.lines) {
 			g.drawLine(line.start.x, line.start.y, line.end.x, line.end.y);
 		}
+		
+		g.dispose();
+
+		return resultImage;
+	}
+	
+	public BufferedImage getScaledTSPArtImage(int zoomLevel) {
+		if (tour == null) {
+			return null;
+		}
+		
+		resultImage = new BufferedImage(originalImage.getWidth() * zoomLevel, originalImage.getHeight() * zoomLevel, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = resultImage.createGraphics();
+		g.setColor(Color.white);
+		g.fillRect(0, 0, resultImage.getWidth(), resultImage.getHeight());
+
+		g.setColor(Color.black);
+		BasicStroke bs = new BasicStroke(1, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
+		g.setStroke(bs);
+
+		for (Line line : tour.lines) {
+			g.drawLine(line.start.x * zoomLevel, line.start.y * zoomLevel, line.end.x * zoomLevel, line.end.y * zoomLevel);
+		}
+		
+		g.dispose();
 
 		return resultImage;
 	}

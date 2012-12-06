@@ -46,7 +46,7 @@ public class Line {
 
 	public boolean intersects(Line line) {
 		// parallel lines
-		if (this.noSlope && line.noSlope || this.a == line.a) {
+		if ((this.noSlope && line.noSlope) || (this.a - line.a < 0.0001)) {
 			return false;
 		}
 

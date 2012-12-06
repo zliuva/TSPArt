@@ -32,12 +32,15 @@ public class TSP2OptFixer implements TSPFixer {
 		}
 		tour.lines.set(b, new Line(endA, endB));
 	}
-
+	
 	public void removeIntersections(Tour tour) {
-		boolean found = true;
-		int run = 2;
+		removeIntersections(tour, 1);
+	}
 
-		while (found && run-- > 0) {
+	public void removeIntersections(Tour tour, int pass) {
+		boolean found = true;
+
+		while (found && pass-- > 0) {
 			found = false;
 			for (int i = 0; i < tour.lines.size(); i++) {
 				for (int j = 0; j < tour.lines.size(); j++) {
@@ -54,6 +57,7 @@ public class TSP2OptFixer implements TSPFixer {
 
 					if (line1.intersects(line2)) {
 						found = true;
+						System.out.println("Fixing " + i + ", " + j);
 						fixIntersection(tour, i, j);
 					}
 				}
