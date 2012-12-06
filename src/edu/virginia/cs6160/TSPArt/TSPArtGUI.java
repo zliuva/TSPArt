@@ -289,7 +289,9 @@ public class TSPArtGUI {
 					zoomLevel--;
 				}
 			} else {
-				zoomLevel++;
+				if (zoomLevel < 10) {
+					zoomLevel++;
+				}
 			}
 
 			if (generator != null) {
