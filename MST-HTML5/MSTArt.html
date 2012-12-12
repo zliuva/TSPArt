@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>MST Art</title>
+	<link rel="stylesheet" href="css/style.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+	<script src="BinaryHeap.js"></script>
+	<script src="MSTArt.js"></script>
+</head>
+<body>
+	<script type="text/javascript">
+		$(function() {
+			var log = function(message) {
+				console.log(message);
+			};
+
+			var loadImage = function() {
+				  $('#srcimg').attr('width', this.width).attr('height', this.height);
+				  $('#destimg').attr('width', this.width).attr('height', this.height);
+				  var context = $('#srcimg')[0].getContext('2d');
+				  context.drawImage(img, 0, 0);
+
+				  log('New image loaded\n');
+			};
+
+			var img = new Image();
+			$(img).attr('src', '../images/can.jpg').load(loadImage);
+
+			$('#generate').click(function() {
+				var context = $('#destimg')[0].getContext('2d');
+				var imageData = context.createImageData($('#destimg').width(), $('#destimg').height());
+
+				log('Pixelating image... ');
+				var nodes = MSTArt.pixelate($('#srcimg'));
+				log('Done.\n');
+
+				log('Solving MST, this could take a while... ');
+				nodes = MSTArt.solveMST(nodes);
+				log('Done.\n');
+
+				log('Drawing MST Art...');
+				context.beginPath();
+				nodes.forEach(function(start) {
+					nodes.forEach(function(end) {
+						if (end.prev == start) {
+							context.moveTo(start.x, start.y);
+							context.lineTo(end.x, end.y);
+						}
+					});
+				});
+				context.closePath();
+				context.stroke();
+				log('Done.');
+			});
+
+			$('#file').change(function(event) {
+				var file = event.target.files[0];
+				var reader = new FileReader();
+
+				reader.onload = function(event) {
+					//var img = new Image();
+					$(img).attr('src', event.target.result).load(loadImage);
+				};
+
+				reader.readAsDataURL(file);
+			});
+		});
+	</script>
+	<div id="container">
+		<header>
+			<h1>MST Art</h1>
+			<div><input type="file" id="file" /></div>
+		</header>
+		<div id="main" role="main">
+			<div style="float: left;">
+				<canvas id="srcimg"></canvas>
+			</div>
+			<div>
+				<canvas id="destimg"></canvas>
+			</div>
+			<div id="toolbar">
+				<input type="button" id="generate" value="Generate MST Art" />
+			</div>
+		</div>
+		<footer>
+		</footer>
+	</div>
+</body>
+</html>
+
